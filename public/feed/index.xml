@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Code incomplete]]></title>
+  <link href="http://yoursite.com/feed" rel="self"/>
+  <link href="http://yoursite.com/"/>
+  <updated>2012-06-20T10:19:53+11:00</updated>
+  <id>http://yoursite.com/</id>
+  <author>
+    <name><![CDATA[Aleksei Sergeev]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+</feed>
