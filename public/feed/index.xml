@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Code incomplete]]></title>
-  <link href="http://yoursite.com/feed" rel="self"/>
-  <link href="http://yoursite.com/"/>
-  <updated>2012-06-20T10:19:53+11:00</updated>
-  <id>http://yoursite.com/</id>
+  <link href="http://xeromorph.herokuapp.com/feed" rel="self"/>
+  <link href="http://xeromorph.herokuapp.com/"/>
+  <updated>2012-06-28T16:51:02+11:00</updated>
+  <id>http://xeromorph.herokuapp.com/</id>
   <author>
     <name><![CDATA[Aleksei Sergeev]]></name>
     
