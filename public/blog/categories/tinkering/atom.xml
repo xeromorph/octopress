@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: tinkering | Code incomplete]]></title>
+  <link href="http://xeromorph.herokuapp.com/blog/categories/tinkering/atom.xml" rel="self"/>
+  <link href="http://xeromorph.herokuapp.com/"/>
+  <updated>2012-07-05T15:24:08+11:00</updated>
+  <id>http://xeromorph.herokuapp.com/</id>
+  <author>
+    <name><![CDATA[Aleksei Sergeev]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Subduing Logitech mice]]></title>
+    <link href="http://xeromorph.herokuapp.com/blog/2012/07/05/subduing-logitech-mice/"/>
+    <updated>2012-07-05T13:51:00+11:00</updated>
+    <id>http://xeromorph.herokuapp.com/blog/2012/07/05/subduing-logitech-mice</id>
+    <content type="html"><![CDATA[<p>Logitech support for their products on Linux platform may be discouraging for casual users. Recently I faced this problem myself. In Windows environment I used to max out my lovely G3 mouses dpi through vendored Logitech software, turn off acceleration and set sensitivity low. That's what I got pretty strong habit for. I also switched off that nasty prone to random triggering <strong>quickly change dpi</strong> button and was quite happy with that setup.</p>
+
+<p>On my freshly installed Ubuntu 12.04 though nothing seemed to work obviously. However, I managed to achieve almost identical behaviour, thus going to share my findings.</p>
+
+<h2>Tackling some mice</h2>
+
+<p>First of all, I needed to manage dpi and buttons behaviour in an apt manner. Fortunately, some valiant reverse-engineering folks produced handy little python script for that matter. <a href="http://code.google.com/p/g5mouse/">G5Mouse</a> works with hiddev driver directly to read and set device flags. Following command let me achieve required dpi and turn off that nifty button.</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>g5mouse.py -d 2000 -n /dev/usb/hiddev0
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Along with that change mouse movement becomes hectic. The way to diminish sensitivity and acceleration rates of cursor is through <strong>xinput</strong>. Firstly, we need to determine <em>id</em> of the device. Running <code>xinput</code> should produce something like the following:</p>
+
+<p>```bash
+$ xinput
+⎡ Virtual core pointer                      id=2[master pointer    (3)]
+⎜   ↳ Virtual core XTEST pointer                id=4[slave  p ointer  (2)]
+⎜   ↳ Logitech USB Gaming Mouse                 id=10[  slave  pointer  (2)]
+⎣ Virtual core keyboard                     id=3  [master keyboard (2)]</p>
+
+<pre><code>↳ Virtual core XTEST keyboard               id=5[slave  keyboard (3)]
+↳ Power Button                                id=6[slave  keyboard (3)]
+↳ Power Button                              id=7[slave  keyboard (3)]
+↳ DATACOMP SteelS쀁̄Љ̒DA  TA              id=8[slave  keyboard (3)]
+↳ DATACOMP SteelS쀁̄Ð̒DATA
+</code></pre>
+
+<p>```</p>
+
+<p>Here we can see <em>Logitech USB Gaming Mouse</em> going along with <code>id=10</code>. Great, that's what we need for the next few commands:</p>
+
+<p><code>bash
+$ xinput set-prop 10 "Device Accel Velocity Scaling" 0.000001
+$ xinput set-prop 10 "Device Accel Adaptive Deceleration" 1.5
+$ xinput set-prop 10 "Device Accel Constant Deceleration" 1.5
+</code>
+All those values are experimental and personal preference.</p>
+
+<p>Am I supposed to pound these commands every single time I boot or resume from sleep|hibernation? In Linux? No way.</p>
+
+<h2>Automating with Upstart</h2>
+
+<p><a href="http://upstart.ubuntu.com/cookbook/">Upstart</a> is a robust event-driven init daemon adopted in Ubuntu for a long time now. Its event-based nature greatly facilitates the ease of my automation setup.</p>
+
+<p>Here I moved <code>g5mouse.py</code> script into <code>/usr/bin</code> directory thus I can call it directly:</p>
+
+<p><code>bash
+$ sudo cp g5mouse.py /usr/bin/g5mouse
+$ sudo chmod 755 /usr/bin/g5mouse
+</code></p>
+
+<p>Then I created <code>g5mouse.conf</code> file in <code>/etc/init</code> directory containing this:</p>
+
+<p>```bash /etc/init/g5mouse.conf
+start on login-session-start or resume
+task</p>
+
+<p>script
+  g5mouse -d 2000 -n /dev/usb/hiddev0
+end script
+<code>``
+and ran</code>sudo initctl reload-configuration`.</p>
+
+<p>Here's the thing. This task starts whenever events <code>login-session-start</code> or <code>resume</code> are emitted. Former is a stock system event occuring once X display manager is started. We ain't gonna use our mouse without graphical environment, right? Latter is a custom event, emitted <em>manually</em> by command <code>initctl emit --no-wait resume</code>. Why do we need it? Well, it was discovered, that driver settings don't persist on sleep/resume, thus I needed some utility to retain them. And here <a href="https://wiki.archlinux.org/index.php/Pm-utils">pm-utils</a> kicks in.</p>
+
+<p>Scripts, located in <code>/etc/pm/sleep.d</code>, are executed whenever system in going down in suspend or resumes its operation. Upon <em>resume from RAM</em> scripts receive <code>resume</code> as the first parameter. Ergo we can place there something like this:</p>
+
+<p>```bash /etc/pm/sleep.d/upstart-event-emitter</p>
+
+<h1>!/bin/bash</h1>
+
+<p>case $1 in
+  resume|thaw)</p>
+
+<pre><code>initctl emit --no-wait resume
+;;
+</code></pre>
+
+<p>esac
+<code>``
+and</code>chmod +x` it.</p>
+
+<p>Finally, we need to automatically apply user-specific <strong>xinput</strong> values upon each log in. To do this, we create the following files:</p>
+
+<p>```bash ~/bin/xinput.sh</p>
+
+<h1>!/bin/bash</h1>
+
+<p>xinput set-prop 10 "Device Accel Velocity Scaling" 0.000001
+xinput set-prop 10 "Device Accel Adaptive Deceleration" 1.5
+xinput set-prop 10 "Device Accel Constant Deceleration" 1.5
+```</p>
+
+<p><code>bash ~/.config/autostart/xinput.desktop
+[Desktop Entry]
+Type=Application
+Exec=~/bin/xinput.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en]=mouse xinput
+Name=mouse xinput
+Comment[en]=
+Comment=
+</code></p>
+
+<p>and <code>chmod +x ~/bin/xinput.sh</code>.</p>
+]]></content>
+  </entry>
+  
+</feed>
