@@ -9,6 +9,7 @@ categories: [Linux, tinkering]
 Logitech support for their products on Linux platform may be discouraging for casual users. Recently I faced this problem myself. In Windows environment I used to max out my lovely G3 mouses dpi through vendored Logitech software, turn off acceleration and set sensitivity low. That's what I got pretty strong habit for. I also switched off that nasty prone to random triggering __quickly change dpi__ button and was quite happy with that setup.
 
 On my freshly installed Ubuntu 12.04 though nothing seemed to work obviously. However, I managed to achieve almost identical behaviour, thus going to share my findings.
+<!--more-->
 
 ## Tackling some mice
 First of all, I needed to manage dpi and buttons behaviour in an apt manner. Fortunately, some valiant reverse-engineering folks produced handy little python script for that matter. [G5Mouse](http://code.google.com/p/g5mouse/) works with hiddev driver directly to read and set device flags. Following command let me achieve required dpi and turn off that nifty button.

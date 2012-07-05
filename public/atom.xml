@@ -4,7 +4,7 @@
   <title><![CDATA[Code incomplete]]></title>
   <link href="http://xeromorph.herokuapp.com/atom.xml" rel="self"/>
   <link href="http://xeromorph.herokuapp.com/"/>
-  <updated>2012-07-05T15:24:08+11:00</updated>
+  <updated>2012-07-05T15:31:24+11:00</updated>
   <id>http://xeromorph.herokuapp.com/</id>
   <author>
     <name><![CDATA[Aleksei Sergeev]]></name>
@@ -21,6 +21,9 @@
     <content type="html"><![CDATA[<p>Logitech support for their products on Linux platform may be discouraging for casual users. Recently I faced this problem myself. In Windows environment I used to max out my lovely G3 mouses dpi through vendored Logitech software, turn off acceleration and set sensitivity low. That&#8217;s what I got pretty strong habit for. I also switched off that nasty prone to random triggering <strong>quickly change dpi</strong> button and was quite happy with that setup.</p>
 
 <p>On my freshly installed Ubuntu 12.04 though nothing seemed to work obviously. However, I managed to achieve almost identical behaviour, thus going to share my findings.</p>
+
+<!--more-->
+
 
 <h2>Tackling some mice</h2>
 
@@ -163,6 +166,8 @@
 
 
 <p>and <code>chmod +x ~/bin/xinput.sh</code>.</p>
+
+<p>Now we&#8217;re all set and ready to ride some mice.</p>
 ]]></content>
   </entry>
   
