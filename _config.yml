@@ -76,3 +76,5 @@ googleplus_hidden: false
 
 # Facebook Like
 facebook_like: false
+
+disqus_short_name: xeromorph
