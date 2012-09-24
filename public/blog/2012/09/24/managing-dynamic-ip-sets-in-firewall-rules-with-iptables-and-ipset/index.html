@@ -3,11 +3,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Whoops I couldn't find that page - Code incomplete</title>
+	<title>Managing dynamic ip sets in firewall rules with iptables and ipset - Code incomplete</title>
 	<meta name="author" content="Aleksei Sergeev">
 
 	
-	<meta name="description" content="Whoops I Couldn't Find That Page You may want to try a search above, or visit the homepage. Also, here are some recent posts: 2012 Managing dynamic &hellip;">
+	<meta name="description" content="There was a need to configure particular server to apply a set of iptables rules to dynamically comprised set of ip addresses. Trying to solve this &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -74,66 +74,41 @@
 
 </header>
 	
-	<div id="content" class="inner"><article class="page">
-    
-    <h1 class="title">Whoops I Couldn't Find That Page</h1>
-    
-    <div class="entry"><p>You may want to try a search above, or <a href="/">visit the homepage</a>.</p>
+	<div id="content" class="inner"><article class="post">
+	<h1 class="title">Managing Dynamic Ip Sets in Firewall Rules With Iptables and Ipset</h1>
+	<div class="entry-content"><p>There was a need to configure particular server to apply a set of iptables rules to dynamically comprised set of ip addresses. Trying to solve this problem using only plain old iptables rules can quickly become a mess, especially considering that large number of rules drastically diminishes performance of machine in general, set aside becoming a pain adding/removing entries from the list. Fortunately, there is a tool out there allowing us to solve this problem in a neat and tidy way, and it is called <a href="http://ipset.netfilter.org/">ipset</a>.</p>
 
-<p>Also, here are some recent posts:</p>
-
-<div id="blog-archives" class="missing">
-  
-  <article>
-    
+<!--more-->
 
 
-    
-    
-    <section class="archives"><h1 class="year">2012</h1>
-
-<article>
-    <h1 class="title"><a href="/blog/2012/09/24/managing-dynamic-ip-sets-in-firewall-rules-with-iptables-and-ipset/">Managing dynamic ip sets in firewall rules with iptables and ipset</a></h1>
-    <div class="meta">
-        <span class="date">Sep 24</span>
-        <span class="tags">
-
-
-    <a class='category' href='/blog/categories/linux/'>Linux</a>, <a class='category' href='/blog/categories/iptables/'>iptables</a>
-
-
-</span>
-        
-    </div>
-</article>
-  </article>
-  
-  <article>
-    
-
-
-<article>
-    <h1 class="title"><a href="/blog/2012/07/05/subduing-logitech-mice/">Subduing Logitech mice</a></h1>
-    <div class="meta">
-        <span class="date">Jul  5</span>
-        <span class="tags">
-
-
-    <a class='category' href='/blog/categories/linux/'>Linux</a>, <a class='category' href='/blog/categories/tinkering/'>tinkering</a>
-
-
-</span>
-        
-    </div>
-</article>
-  </article>
-  
+<h2>Problem statement</h2>
 </div>
 
-</div>
-</article>
 
-    <div class="share">
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-09-24T15:23:00+11:00" pubdate data-updated="true">Sep 24<span>th</span>, 2012</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/linux/'>Linux</a>, <a class='category' href='/blog/categories/iptables/'>iptables</a>
+
+
+</div>
+	
+</div></article>
+<div class="share">
 	<div class="addthis_toolbox addthis_default_style ">
 	
 	
@@ -146,6 +121,11 @@
 </div>
 
 
+<section id="comment">
+    <h1 class="title">Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
 </div>
 	<footer id="footer" class="inner">Copyright &copy; 2012
 
@@ -165,7 +145,10 @@
       var disqus_shortname = 'xeromorph';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://xeromorph.herokuapp.com/blog/2012/09/24/managing-dynamic-ip-sets-in-firewall-rules-with-iptables-and-ipset/';
+        var disqus_url = 'http://xeromorph.herokuapp.com/blog/2012/09/24/managing-dynamic-ip-sets-in-firewall-rules-with-iptables-and-ipset/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

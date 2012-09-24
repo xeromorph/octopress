@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Linux | Code incomplete]]></title>
   <link href="http://xeromorph.herokuapp.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://xeromorph.herokuapp.com/"/>
-  <updated>2012-07-05T16:09:35+11:00</updated>
+  <updated>2012-09-24T16:24:34+11:00</updated>
   <id>http://xeromorph.herokuapp.com/</id>
   <author>
     <name><![CDATA[Aleksei Sergeev]]></name>
@@ -12,6 +12,20 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Managing dynamic ip sets in firewall rules with iptables and ipset]]></title>
+    <link href="http://xeromorph.herokuapp.com/blog/2012/09/24/managing-dynamic-ip-sets-in-firewall-rules-with-iptables-and-ipset/"/>
+    <updated>2012-09-24T15:23:00+11:00</updated>
+    <id>http://xeromorph.herokuapp.com/blog/2012/09/24/managing-dynamic-ip-sets-in-firewall-rules-with-iptables-and-ipset</id>
+    <content type="html"><![CDATA[<p>There was a need to configure particular server to apply a set of iptables rules to dynamically comprised set of ip addresses. Trying to solve this problem using only plain old iptables rules can quickly become a mess, especially considering that large number of rules drastically diminishes performance of machine in general, set aside becoming a pain adding/removing entries from the list. Fortunately, there is a tool out there allowing us to solve this problem in a neat and tidy way, and it is called <a href="http://ipset.netfilter.org/">ipset</a>.</p>
+
+<!--more-->
+
+
+<h2>Problem statement</h2>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Subduing Logitech mice]]></title>
