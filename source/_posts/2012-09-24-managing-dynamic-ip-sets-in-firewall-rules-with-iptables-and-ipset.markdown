@@ -80,11 +80,23 @@ Here we say this task is to run whether server is rebooting or shutting down and
 
 The following tasks are designed to restore this settings back up on startup of a server.
 ```bash /etc/init/iptables_restore.conf
+description     "Apply iptables rules on startup"
+start on startup and starting networking
+task
+script
+  iptables-restore < /etc/iptables/iptables.save
+end script
 ```
+
 ```bash /etc/init/ipset_restore.conf
+description    "Apply ipset rules un startup"
+start on startup and starting iptables_restore
+task
+script
+  ipset restore < /etc/iptables/ipset.save
+end script
 ```
 
 Important caveat here is that we start `ipset_restore`  on `starting iptables_restore` meaning _right before_ it. Restoring iptables earlier would fail because of referencing rule with ipset set not yet created/imported.
 
 Finally, we should run `sudo initctl reload-configuration` for upstart to detect our changes and configure itself.
-* ddos
