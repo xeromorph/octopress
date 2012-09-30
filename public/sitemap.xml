@@ -8,7 +8,7 @@
         <loc>
             http://xeromorph.herokuapp.com/blog/2012/09/24/managing-dynamic-ip-sets-in-firewall-rules-with-iptables-and-ipset/
         </loc>
-        <lastmod>2012-09-24T15:48:42+11:00</lastmod>
+        <lastmod>2012-10-01T09:03:52+11:00</lastmod>
     </url>
     <url>
         <loc>http://xeromorph.herokuapp.com/404.html</loc>
@@ -16,7 +16,7 @@
     </url>
     <url>
         <loc>http://xeromorph.herokuapp.com/blog/archives/</loc>
-        <lastmod>2012-09-24T15:48:42+11:00</lastmod>
+        <lastmod>2012-10-01T09:03:52+11:00</lastmod>
     </url>
     <url>
         <loc>http://xeromorph.herokuapp.com/feed/index.xml</loc>
@@ -24,6 +24,6 @@
     </url>
     <url>
         <loc>http://xeromorph.herokuapp.com/</loc>
-        <lastmod>2012-09-24T15:48:42+11:00</lastmod>
+        <lastmod>2012-10-01T09:03:52+11:00</lastmod>
     </url>
 </urlset>

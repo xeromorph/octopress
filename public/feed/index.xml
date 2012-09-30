@@ -4,7 +4,7 @@
   <title><![CDATA[Code incomplete]]></title>
   <link href="http://xeromorph.herokuapp.com/feed" rel="self"/>
   <link href="http://xeromorph.herokuapp.com/"/>
-  <updated>2012-09-24T16:24:34+11:00</updated>
+  <updated>2012-10-01T09:04:58+11:00</updated>
   <id>http://xeromorph.herokuapp.com/</id>
   <author>
     <name><![CDATA[Aleksei Sergeev]]></name>
@@ -24,6 +24,148 @@
 
 
 <h2>Problem statement</h2>
+
+<p>We need server to have <strong>reboot persistent</strong> configuration of ipset and iptables rules, allowing us to easily manage list of whitelisted IPs eligible to access certain services (i.e. TCP connections on particular ports). Particularly, we should tune iptables <code>nf_conntrack_ftp</code> module to facilitate passive FTP connections on non-standart port (e.g. 2121).</p>
+
+<p>In short, allow TCP connections on ports 22, 80, 139, 445, 2121 and UDP packets on port 53.</p>
+
+<h2>Installation and initial setup</h2>
+
+<p>First, make sure ipset is installed, otherwise install it using</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo apt-get install ipset
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We are going to use <code>hash:ip</code> set type to store list of IP addresses for whitelisting. The advantage of this set type is that the amount of memory required to store entries dynamically expands and shrinks whether entries are added to or removed from list. <code>bitmap:ip</code> set type in contrary allocates memory for <code>maxelem</code> entries(which cannot exceed 65536, by the way) specified upon creation of set and thus we cannot add any entry if that amount is exceeded. For some use-cases this may just not be an issue, but you should be aware of this caveat.</p>
+
+<figure class='code'><figcaption><span>creating ip set</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo ipset create whitelisted <span class="nb">hash</span>:ip family inet hashsize 64 maxelem 4294967295
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Afterwards we can manage contents of created set from anywhere we find fit:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#adding ip to set</span>
+</span><span class='line'><span class="nv">$ </span>sudo ipset add whitelisted 10.0.0.1
+</span><span class='line'><span class="c">#removing ip from set</span>
+</span><span class='line'><span class="nv">$ </span>sudo ipset del whitelisted 10.0.0.1
+</span><span class='line'><span class="c">#or even deleting the whole set at once</span>
+</span><span class='line'><span class="nv">$ </span>sudo ipset destroy whitelisted
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Configuring iptables around our set and according to initial requirements would look like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>sudo iptables-restore <span class="s">&lt;&lt;-EOF</span>
+</span><span class='line'><span class="s">*filter</span>
+</span><span class='line'><span class="s">:INPUT DROP [0:0]</span>
+</span><span class='line'><span class="s">:FORWARD DROP [0:0]</span>
+</span><span class='line'><span class="s">:OUTPUT ACCEPT [0:0]</span>
+</span><span class='line'><span class="s">:whitelisted - [0:0]</span>
+</span><span class='line'><span class="s">-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT</span>
+</span><span class='line'><span class="s">-A INPUT -i lo -j ACCEPT</span>
+</span><span class='line'><span class="s">-A INPUT -m set --match-set whitelist src -j whitelisted</span>
+</span><span class='line'><span class="s">-A whitelisted -p tcp -m multiport --dports 22,80,139,445,2121 -j ACCEPT</span>
+</span><span class='line'><span class="s">-A whitelisted -p udp --dport 53 -j ACCEPT</span>
+</span><span class='line'><span class="s">COMMIT</span>
+</span><span class='line'><span class="s">EOF</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here we set default policies for INPUT and FORWARD chains to DROP, then some basic setup for accepting related packets for established connections and loopback interface. Then packets with source addresses matching those in <strong>whitelisted</strong> ip set go into whitelisted chain, where we&#8217;ve defined required rules. As simple as that.</p>
+
+<p>In order to allow passive ftp data connections through firewall, we need to load nf_conntrack_ftp kernel module on boot. By default, it monitors control ftp connections on port 21 detecting advertisements of data connection ports and dynamically allowing them in. Given we are using custom port 2121, we should add following line to <code>/etc/modules</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>nf_conntrack_ftp <span class="nv">ports</span><span class="o">=</span>21,2121
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That concludes initial configuration, let&#8217;s proceed with persisting it.</p>
+
+<h2>Reboot persistence</h2>
+
+<p>In Ubuntu there is a great evented-based init service geared up for our cause called <a href="http://upstart.ubuntu.com/">Upstart</a>. All we need is to create a few simple tasks to run on certain events on system.</p>
+
+<p>First, we need some place safe to store iptables and ipset configurations. I prefer <code>/etc/iptables</code> folder, but it&#8217;s up to you to choose, really. So, we create this folder with <code>sudo mkdir /etc/iptables</code> and make sure it&#8217;s only writable for root user. Then we create task for saving configurations there.</p>
+
+<figure class='code'><figcaption><span>/etc/init/iptables_save.conf</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>description     <span class="s2">&quot;Save iptables rules on shutdown&quot;</span>
+</span><span class='line'>start on runlevel <span class="o">[</span>016<span class="o">]</span>
+</span><span class='line'>task
+</span><span class='line'>script
+</span><span class='line'>  ipset save &gt; /etc/iptables/ipset.save
+</span><span class='line'>  iptables-save &gt; /etc/iptables/iptables.save
+</span><span class='line'>end script
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here we say this task is to run whether server is rebooting or shutting down and it&#8217;s simply exporting settings to corresponding files.</p>
+
+<p>The following tasks are designed to restore this settings back up on startup of a server.</p>
+
+<figure class='code'><figcaption><span>/etc/init/iptables_restore.conf</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>description     <span class="s2">&quot;Apply iptables rules on startup&quot;</span>
+</span><span class='line'>start on startup and starting networking
+</span><span class='line'>task
+</span><span class='line'>script
+</span><span class='line'>  iptables-restore &lt; /etc/iptables/iptables.save
+</span><span class='line'>end script
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span>/etc/init/ipset_restore.conf</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>description    <span class="s2">&quot;Apply ipset rules un startup&quot;</span>
+</span><span class='line'>start on startup and starting iptables_restore
+</span><span class='line'>task
+</span><span class='line'>script
+</span><span class='line'>  ipset restore &lt; /etc/iptables/ipset.save
+</span><span class='line'>end script
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Important caveat here is that we start <code>ipset_restore</code>  on <code>starting iptables_restore</code> meaning <em>right before</em> it. Restoring iptables earlier would fail because of referencing rule with ipset set not yet created/imported.</p>
+
+<p>Finally, we should run <code>sudo initctl reload-configuration</code> for upstart to detect our changes and configure itself.</p>
 ]]></content>
   </entry>
   
